@@ -17,8 +17,8 @@ export class User {
   @Prop({ required: true })
   password: string;
 
-  @Prop()
-  avatar: string;
+  @Prop({ default: null })
+  avatar: string | null;
 
   @Prop({ default: 1000 })
   credits: number;
