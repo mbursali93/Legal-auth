@@ -17,7 +17,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async register(body) {
+  async register(body, avatar) {
     const { username, email, password, phoneNumber } = body;
     const hashedPassword = await bcrypt.hash(password, 10);
     return await this.userModel.create({
@@ -25,6 +25,7 @@ export class AuthService {
       email,
       password: hashedPassword,
       phoneNumber,
+      avatar,
     });
   }
 

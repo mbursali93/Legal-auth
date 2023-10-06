@@ -1,16 +1,33 @@
-import { Controller, Post, Body, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  BadRequestException,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from 'src/dto/user.tdo';
 import { Login2FaDto } from 'src/dto/login2fa.dto';
 import { redis } from 'src/redis';
+import { AwsS3Service } from 'src/aws/aws_s3/aws_s3.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly uploadService: AwsS3Service,
+  ) {}
 
   @Post('register')
-  async register(@Body() body: RegisterDto) {
-    return await this.authService.register(body);
+  async register(@Body() body: RegisterDto, @UploadedFile() file) {
+    try {
+      let avatar: string | null = null;
+      if (file) avatar = await this.uploadService.upload(file, Date.now());
+      return await this.authService.register(body, avatar);
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   @Post('login')
