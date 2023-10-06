@@ -11,12 +11,14 @@ import { RegisterDto } from 'src/dto/user.tdo';
 import { Login2FaDto } from 'src/dto/login2fa.dto';
 import { redis } from 'src/redis';
 import { AwsS3Service } from 'src/aws/aws_s3/aws_s3.service';
+import { MainService } from 'src/utils/main.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly uploadService: AwsS3Service,
+    private readonly mainService: MainService,
   ) {}
 
   @Post('register')
@@ -30,13 +32,13 @@ export class AuthController {
     }
   }
 
+  // TODO: Add Throttle
   @Post('login')
   async login(@Body() body) {
     try {
       const user = await this.authService.login(body);
-      // const { email, phoneNumber } = user;
+      const { email, phoneNumber } = user;
 
-      // TODO: send email and sms
       const emailCode = this.authService.generate2FaCode();
       const smsCode = this.authService.generate2FaCode();
 
@@ -44,7 +46,15 @@ export class AuthController {
       redis.hset(`codes:userId:${user._id}`, 'smsCode', smsCode);
       redis.expire(`codes:userId:${user._id}`, 300);
 
-      return { emailCode, smsCode };
+      this.mainService.sendSms(phoneNumber, smsCode);
+      this.mainService.sendMail(email, emailCode);
+
+      // return { emailCode, smsCode };
+      return {
+        message: 'Sms and Mail sent',
+        error: null,
+        statusCode: 201,
+      };
     } catch (err) {
       return err.response;
     }

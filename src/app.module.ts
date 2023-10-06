@@ -9,6 +9,7 @@ import { ConfigModule } from '@nestjs/config';
 import { User, UserSchema } from './schemas/user.schema';
 import { AwsS3Service } from './aws/aws_s3/aws_s3.service';
 import { AwsS3Module } from './aws/aws_s3/aws_s3.module';
+import { MainService } from './utils/main.service';
 
 @Module({
   imports: [
@@ -24,6 +25,6 @@ import { AwsS3Module } from './aws/aws_s3/aws_s3.module';
     AwsS3Module,
   ],
   controllers: [AppController, AuthController],
-  providers: [AppService, AuthService, AwsS3Service],
+  providers: [AppService, AuthService, AwsS3Service, MainService],
 })
 export class AppModule {}
