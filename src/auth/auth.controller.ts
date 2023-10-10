@@ -16,6 +16,7 @@ import { redis } from 'src/redis';
 import { AwsS3Service } from 'src/aws/aws_s3/aws_s3.service';
 import { MainService } from 'src/utils/main.service';
 import { AuthGuard } from './auth.guard';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 @Controller('auth')
 export class AuthController {
@@ -36,7 +37,7 @@ export class AuthController {
     }
   }
 
-  // TODO: Add Throttle
+  @UseGuards(ThrottlerGuard) // improve
   @Post('login')
   async login(@Body() body) {
     try {
