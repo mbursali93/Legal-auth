@@ -5,6 +5,9 @@ import {
   BadRequestException,
   UploadedFile,
   UseInterceptors,
+  Delete,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from 'src/dto/user.tdo';
@@ -12,6 +15,7 @@ import { Login2FaDto } from 'src/dto/login2fa.dto';
 import { redis } from 'src/redis';
 import { AwsS3Service } from 'src/aws/aws_s3/aws_s3.service';
 import { MainService } from 'src/utils/main.service';
+import { AuthGuard } from './auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -46,10 +50,10 @@ export class AuthController {
       redis.hset(`codes:userId:${user._id}`, 'smsCode', smsCode);
       redis.expire(`codes:userId:${user._id}`, 300);
 
-      this.mainService.sendSms(phoneNumber, smsCode);
-      this.mainService.sendMail(email, emailCode);
+      // this.mainService.sendSms(phoneNumber, smsCode);
+      // this.mainService.sendMail(email, emailCode);
 
-      // return { emailCode, smsCode };
+      console.log({ emailCode, smsCode });
       return {
         message: 'Sms and Mail sent',
         error: null,
@@ -68,4 +72,13 @@ export class AuthController {
   }
 
   //LOGOUT
+
+  //DELETE USER
+
+  @UseGuards(AuthGuard)
+  @Delete()
+  async deleteUser(@Request() req) {
+    const userId = req['user'].userId;
+    return await this.authService.deleteUser(userId);
+  }
 }

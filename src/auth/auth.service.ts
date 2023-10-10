@@ -7,14 +7,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from 'src/schemas/user.schema';
 import * as bcrypt from 'bcrypt';
-import { JwtService } from '@nestjs/jwt';
 import { redis } from 'src/redis';
+import { JwtService } from 'src/utils/jwt.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
-    private jwtService: JwtService,
+    private readonly jwtService: JwtService,
   ) {}
 
   async register(body, avatar) {
@@ -32,8 +32,7 @@ export class AuthService {
   async login(body) {
     try {
       const { username, password } = body;
-      const user = await this.userModel.findOne({ username });
-      if (!user) throw new NotFoundException('yo');
+      const user = await this.userModel.findOne({ username, isDeleted: false });
       const passwordMatches = await bcrypt.compare(password, user.password);
       if (user.username !== username || !passwordMatches)
         throw new NotFoundException('Wrong username or password.');
@@ -61,6 +60,15 @@ export class AuthService {
     delete userWithoutPassword.password;
 
     return { user: userWithoutPassword, userToken };
+  }
+
+  async deleteUser(userId) {
+    const user = await this.userModel.findOneAndUpdate(
+      { _id: userId },
+      { isDeleted: true },
+    );
+
+    return user;
   }
 
   generate2FaCode() {
