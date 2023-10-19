@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -33,13 +34,19 @@ export class AuthService {
     try {
       const { username, password } = body;
       const user = await this.userModel.findOne({ username, isDeleted: false });
+
       const passwordMatches = await bcrypt.compare(password, user.password);
       if (user.username !== username || !passwordMatches)
         throw new NotFoundException('Wrong username or password.');
 
+      const userOnline = await redis.hgetall(`userId:${user._id}`);
+
+      if (userOnline.currentToken)
+        throw new BadRequestException('This user is currently online');
+
       return user;
     } catch (err) {
-      throw new NotFoundException('Wrong username or password.');
+      throw new InternalServerErrorException(err.message);
     }
   }
 
@@ -56,6 +63,7 @@ export class AuthService {
 
     const [user, redisStatus, userToken] = promises;
 
+    await redis.hset(`userId:${userId}`, 'currentToken', userToken);
     const userWithoutPassword = { ...user.toObject() };
     delete userWithoutPassword.password;
 
