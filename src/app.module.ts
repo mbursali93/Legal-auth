@@ -11,6 +11,7 @@ import { AwsS3Service } from './aws/aws_s3/aws_s3.service';
 import { AwsS3Module } from './aws/aws_s3/aws_s3.module';
 import { MainService } from './utils/main.service';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     AuthModule,
     AwsS3Module,
+    PaymentModule,
   ],
   controllers: [AppController, AuthController],
   providers: [AppService, AuthService, AwsS3Service, MainService],

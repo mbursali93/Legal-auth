@@ -63,11 +63,20 @@ export class AuthService {
 
     const [user, redisStatus, userToken] = promises;
 
-    await redis.hset(`userId:${userId}`, 'currentToken', userToken);
+    redis.hset(`userId:${user._id}`, 'currentMoney', user.money);
+    redis.hset(`userId:${userId}`, 'currentToken', userToken);
     const userWithoutPassword = { ...user.toObject() };
     delete userWithoutPassword.password;
 
     return { user: userWithoutPassword, userToken };
+  }
+
+  async logout(userId) {
+    // SEND MESSAGE TO GAME SERVICE
+
+    redis.del(`userId:${userId}`);
+
+    return 'logout successful';
   }
 
   async deleteUser(userId) {

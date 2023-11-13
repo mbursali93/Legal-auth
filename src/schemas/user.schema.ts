@@ -21,7 +21,7 @@ export class User {
   avatar: string | null;
 
   @Prop({ default: 1000 })
-  credits: number;
+  money: number;
 
   // @Prop()
   // level: number

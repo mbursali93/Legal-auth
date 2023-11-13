@@ -74,6 +74,13 @@ export class AuthController {
 
   //LOGOUT
 
+  @UseGuards(AuthGuard)
+  @Delete('logout')
+  async logout(@Request() req) {
+    const userId = req['user'].userId;
+    return await this.authService.logout(userId);
+  }
+
   //DELETE USER
 
   @UseGuards(AuthGuard)
