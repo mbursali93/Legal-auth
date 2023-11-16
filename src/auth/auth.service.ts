@@ -65,6 +65,7 @@ export class AuthService {
 
     redis.hset(`userId:${user._id}`, 'currentMoney', user.money);
     redis.hset(`userId:${userId}`, 'currentToken', userToken);
+    redis.hset(`userId:${user._id}`, 'currentBet', '0');
     const userWithoutPassword = { ...user.toObject() };
     delete userWithoutPassword.password;
 
